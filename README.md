@@ -16,7 +16,7 @@
 
 Checkpoint 1 da disciplina de **Kubernetes** (FIAP, setembro de 2025). O desafio era publicar a página do banco fictício **SafeBank Digital** em um cluster Kubernetes local usando os objetos básicos: **Pod**, **Service ClusterIP** e **Deployment** com réplicas, escolher uma estratégia de exposição e provar que a aplicação escala.
 
-A entrega original usava a página padrão do nginx. Nesta versão a página do SafeBank vem de um **ConfigMap**, a imagem tem **tag fixa**, os containers têm **probes** e **limites de recursos**, e um script valida tudo de ponta a ponta no **kind**.
+A página do SafeBank vem de um **ConfigMap**, a imagem tem **tag fixa**, os containers têm **probes** e **limites de recursos**, e um script valida tudo de ponta a ponta no **kind**.
 
 ## Arquitetura
 
@@ -36,16 +36,16 @@ A entrega original usava a página padrão do nginx. Nesta versão a página do 
 | `k8s/pod.yaml` | Pod `safebank-app` | Exemplo unitário com o mesmo rótulo do Deployment |
 | `k8s/service.yaml` | Service `safebank-app` (ClusterIP) | Encaminha a porta 80 para os Pods com `app=safebank-app` |
 
-### Melhorias em relação à entrega original
+### Decisões técnicas
 
-| Ponto | Antes | Agora |
+| Ponto | Como ficou | Por quê |
 |---|---|---|
-| Página | Página padrão do nginx | Página do SafeBank via ConfigMap, com o nome do Pod que respondeu (SSI do nginx) |
-| Imagem | `nginx:latest` | `nginx:1.29.8-alpine` |
-| Saúde | Sem probes | `readinessProbe` e `livenessProbe` em `/healthz` |
-| Recursos | Sem limites | `requests` de 25m/32Mi e `limits` de 200m/128Mi |
-| Namespace | Criado na mão com `kubectl create ns` | Declarado em `k8s/namespace.yaml` |
-| Validação | Prints | `scripts/validar.sh` e GitHub Actions com kubeconform e kind |
+| Página | Página do SafeBank num ConfigMap, com o nome do Pod que respondeu (SSI do nginx) | O conteúdo muda sem gerar imagem nova, e dá para ver o Service distribuindo entre as réplicas |
+| Imagem | `nginx:1.29.8-alpine` | Tag fixa: o mesmo manifesto sempre sobe a mesma versão |
+| Saúde | `readinessProbe` e `livenessProbe` em `/healthz` | O Service só manda tráfego para Pods prontos, e um Pod travado é reiniciado |
+| Recursos | `requests` de 25m/32Mi e `limits` de 200m/128Mi | O scheduler sabe quanto reservar e um Pod não consome o nó inteiro |
+| Namespace | Declarado em `k8s/namespace.yaml` | Tudo sobe com um `kubectl apply` |
+| Validação | `scripts/validar.sh` e GitHub Actions com kubeconform e kind | A entrega é conferida a cada push, não só por prints |
 
 ### Estratégia de exposição
 
@@ -73,7 +73,7 @@ fiap-k8s-cp1/
 ├── docs/
 │   ├── arch.gif           # Diagrama
 │   ├── demo.webp          # Demo da página
-│   └── prints/            # Evidências da entrega original
+│   └── prints/            # Evidências da entrega
 └── .github/workflows/validacao.yml
 ```
 
@@ -124,7 +124,7 @@ O script confere:
 
 O mesmo script roda no GitHub Actions dentro de um cluster kind, depois do kubeconform.
 
-### Evidências da entrega original
+### Evidências da entrega
 
 Prints feitos no Windows durante o checkpoint, com a página padrão do nginx:
 
