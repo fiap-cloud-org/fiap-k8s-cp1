@@ -1,0 +1,162 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: safebank-site
+  namespace: safebank-will
+  labels:
+    app: safebank-app
+data:
+  default.conf: |
+    server {
+        listen 80;
+        server_name _;
+        root /usr/share/nginx/html;
+
+        location / {
+            ssi on;
+            index index.html;
+            add_header X-Served-By $hostname always;
+        }
+
+        location = /healthz {
+            access_log off;
+            default_type text/plain;
+            return 200 "ok\n";
+        }
+    }
+  index.html: |
+    <!doctype html>
+    <html lang="pt-BR">
+    <head>
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1">
+      <title>SafeBank Digital</title>
+      <style>
+        :root {
+          --tinta: #0f2a24;
+          --tinta-suave: #4a5d58;
+          --papel: #f5f2ea;
+          --cartao: #ffffff;
+          --verde: #1f6b52;
+          --verde-claro: #d9e8df;
+          --ouro: #b8893b;
+          --linha: #e2ddd0;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+          font-family: "Segoe UI", system-ui, -apple-system, Roboto, "Helvetica Neue", Arial, sans-serif;
+          color: var(--tinta);
+          background: var(--papel);
+          line-height: 1.55;
+        }
+        .faixa { max-width: 1120px; margin: 0 auto; padding: 0 28px; }
+        header { border-bottom: 1px solid var(--linha); background: var(--papel); }
+        header .faixa { display: flex; align-items: center; justify-content: space-between; height: 72px; }
+        .marca { display: flex; align-items: center; gap: 10px; font-weight: 700; font-size: 19px; letter-spacing: -0.2px; }
+        .marca svg { width: 30px; height: 30px; }
+        nav a { color: var(--tinta-suave); text-decoration: none; margin-left: 28px; font-size: 15px; }
+        nav a:hover { color: var(--tinta); }
+        .botao { display: inline-block; background: var(--verde); color: #fff; text-decoration: none; padding: 12px 22px; border-radius: 6px; font-weight: 600; font-size: 15px; }
+        .botao.contorno { background: transparent; color: var(--tinta); border: 1px solid var(--tinta); margin-left: 10px; }
+        .hero { display: grid; grid-template-columns: 1.1fr 0.9fr; gap: 56px; align-items: center; padding: 72px 0 64px; }
+        .selo { display: inline-block; font-size: 13px; font-weight: 600; color: var(--verde); background: var(--verde-claro); padding: 4px 10px; border-radius: 4px; margin-bottom: 18px; }
+        h1 { font-family: Georgia, "Times New Roman", serif; font-weight: 400; font-size: 50px; line-height: 1.12; letter-spacing: -0.8px; margin-bottom: 20px; }
+        .hero p { font-size: 18px; color: var(--tinta-suave); max-width: 520px; margin-bottom: 30px; }
+        .conta { background: var(--cartao); border: 1px solid var(--linha); border-radius: 10px; padding: 26px; }
+        .conta .topo { display: flex; justify-content: space-between; font-size: 14px; color: var(--tinta-suave); }
+        .saldo { font-family: Georgia, serif; font-size: 36px; margin: 6px 0 22px; }
+        .mov { display: flex; justify-content: space-between; padding: 12px 0; border-top: 1px solid var(--linha); font-size: 15px; }
+        .mov span:last-child { font-variant-numeric: tabular-nums; }
+        .entrada { color: var(--verde); }
+        .cartao-fisico { margin-top: 18px; height: 118px; border-radius: 10px; background: var(--tinta); color: #e9e4d6; padding: 18px 20px; display: flex; flex-direction: column; justify-content: space-between; font-size: 13px; letter-spacing: 1.5px; }
+        .cartao-fisico .chip { width: 34px; height: 24px; border-radius: 4px; background: var(--ouro); }
+        section.recursos { background: var(--cartao); border-top: 1px solid var(--linha); border-bottom: 1px solid var(--linha); padding: 56px 0; }
+        .grade { display: grid; grid-template-columns: repeat(3, 1fr); gap: 36px; }
+        .grade h3 { font-size: 17px; margin-bottom: 8px; }
+        .grade p { color: var(--tinta-suave); font-size: 15px; }
+        .num { font-family: Georgia, serif; color: var(--ouro); font-size: 15px; margin-bottom: 10px; display: block; }
+        .cluster { padding: 40px 0 56px; }
+        .cluster .painel { display: flex; flex-wrap: wrap; gap: 14px 40px; align-items: center; border: 1px dashed var(--verde); border-radius: 8px; padding: 18px 22px; background: #fbfaf6; font-size: 14px; color: var(--tinta-suave); }
+        .cluster strong { color: var(--tinta); font-family: "Cascadia Mono", Consolas, "SFMono-Regular", Menlo, monospace; font-size: 14px; }
+        .ponto { width: 9px; height: 9px; border-radius: 50%; background: #2f9e6e; display: inline-block; margin-right: 8px; }
+        footer { font-size: 13px; color: var(--tinta-suave); padding: 0 0 36px; }
+        @media (max-width: 860px) {
+          .hero { grid-template-columns: 1fr; padding: 44px 0; }
+          h1 { font-size: 38px; }
+          .grade { grid-template-columns: 1fr; }
+          nav { display: none; }
+        }
+      </style>
+    </head>
+    <body>
+      <header>
+        <div class="faixa">
+          <div class="marca">
+            <svg viewBox="0 0 32 32" aria-hidden="true"><path d="M16 2 4 7v8c0 7.5 5.1 13.2 12 15 6.9-1.8 12-7.5 12-15V7L16 2Z" fill="#1f6b52"/><path d="m11 16 3.5 3.5L21.5 12" fill="none" stroke="#f5f2ea" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            SafeBank Digital
+          </div>
+          <nav>
+            <a href="#conta">Conta</a>
+            <a href="#recursos">Recursos</a>
+            <a href="#cluster">Infraestrutura</a>
+          </nav>
+        </div>
+      </header>
+
+      <main>
+        <div class="faixa hero" id="conta">
+          <div>
+            <span class="selo">Banco digital fictício · CP1 FIAP</span>
+            <h1>Sua conta no bolso, disponível a qualquer hora.</h1>
+            <p>Abra a conta pelo celular, pague com Pix e acompanhe cada movimentação em tempo real. A página roda em réplicas no Kubernetes para continuar no ar mesmo quando um Pod cai.</p>
+            <a class="botao" href="#recursos">Conhecer a conta</a>
+            <a class="botao contorno" href="#cluster">Ver o cluster</a>
+          </div>
+          <div class="conta" aria-label="Exemplo de extrato">
+            <div class="topo"><span>Conta corrente</span><span>Ag. 0001</span></div>
+            <div class="saldo">R$ 12.480,35</div>
+            <div class="mov"><span>Pix recebido · Aluguel</span><span class="entrada">+ R$ 1.800,00</span></div>
+            <div class="mov"><span>Mercado do bairro</span><span>- R$ 214,90</span></div>
+            <div class="mov"><span>Rendimento da conta</span><span class="entrada">+ R$ 38,12</span></div>
+            <div class="cartao-fisico">
+              <span class="chip"></span>
+              <span>•••• •••• •••• 4821</span>
+            </div>
+          </div>
+        </div>
+
+        <section class="recursos" id="recursos">
+          <div class="faixa grade">
+            <div>
+              <span class="num">01</span>
+              <h3>Pix sem tarifa</h3>
+              <p>Transferências na hora, com chave aleatória, QR Code e agendamento.</p>
+            </div>
+            <div>
+              <span class="num">02</span>
+              <h3>Cartão com controle</h3>
+              <p>Bloqueio pelo app, cartão virtual para compras online e limite ajustável.</p>
+            </div>
+            <div>
+              <span class="num">03</span>
+              <h3>Sempre disponível</h3>
+              <p>Várias réplicas atrás de um Service: se um Pod falha, o tráfego segue para os outros.</p>
+            </div>
+          </div>
+        </section>
+
+        <div class="faixa cluster" id="cluster">
+          <div class="painel">
+            <span><span class="ponto"></span>Página servida pelo Pod <strong><!--# echo var="hostname" default="local" --></strong></span>
+            <span>Namespace <strong>safebank-will</strong></span>
+            <span>Service <strong>safebank-app · ClusterIP</strong></span>
+            <span>Imagem <strong>nginx:1.29.8-alpine</strong></span>
+          </div>
+        </div>
+      </main>
+
+      <footer>
+        <div class="faixa">SafeBank Digital é um banco fictício criado para o Checkpoint 1 de Kubernetes da FIAP.</div>
+      </footer>
+    </body>
+    </html>
