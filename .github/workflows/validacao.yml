@@ -1,0 +1,40 @@
+name: Validação dos manifestos
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  kubeconform:
+    name: Esquema dos manifestos (kubeconform)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Instalar kubeconform
+        run: |
+          curl -sSL https://github.com/yannh/kubeconform/releases/download/v0.8.0/kubeconform-linux-amd64.tar.gz \
+            | tar -xz -C /usr/local/bin kubeconform
+
+      - name: Validar k8s/
+        run: kubeconform -strict -summary k8s/
+
+  kind:
+    name: Teste ponta a ponta no kind
+    runs-on: ubuntu-latest
+    needs: kubeconform
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Criar cluster kind
+        uses: helm/kind-action@v1
+        with:
+          cluster_name: safebank-ci
+
+      - name: Aplicar, acessar e escalar
+        run: ./scripts/validar.sh
