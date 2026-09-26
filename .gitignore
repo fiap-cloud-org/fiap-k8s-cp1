@@ -1,0 +1,16 @@
+# Sistema operacional
+.DS_Store
+Thumbs.db
+
+# Editores
+.vscode/
+.idea/
+*.swp
+
+# Kubernetes
+*.kubeconfig
+kubeconfig*
+
+# Saídas locais de teste
+*.log
+tmp/
