@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: safebank-app
+  namespace: safebank-will
+spec:
+  selector:
+    app: safebank-app
+  ports:
+  - protocol: TCP
+    port: 80
+    targetPort: 80
+  type: ClusterIP
